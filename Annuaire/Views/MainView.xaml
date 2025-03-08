@@ -1,0 +1,153 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
+    xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+    xmlns:ViewModels="clr-namespace:Annuaire.ViewModels"
+    x:Class="Annuaire.Views.MainView"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    >
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </UserControl.Resources>
+
+
+    <DockPanel LastChildFill="True">
+
+
+        <!-- Barre de statut en bas -->
+        <StatusBar DockPanel.Dock="Bottom" Height="25" Background="#FF007ACC">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Status}" 
+                         Foreground="White"
+                         VerticalAlignment="Center"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- Contenu principal existant dans un Grid -->
+
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Barre de recherche avec boutons -->
+                <Grid Grid.Row="0" Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- ComboBoxEdit avec historique des recherches -->
+                    <dxe:ComboBoxEdit
+                Grid.Column="0" 
+                NullText="Entrez le texte à rechercher..." 
+                IsTextEditable="True"
+                ItemsSource="{Binding SearchHistory}"
+                EditValue="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                KeyDown="ComboBoxEdit_KeyDown">
+                        <dxe:ComboBoxEdit.StyleSettings>
+                            <dxe:ComboBoxStyleSettings />
+                        </dxe:ComboBoxEdit.StyleSettings>
+                    </dxe:ComboBoxEdit>
+
+                    <!-- Bouton Trouver -->
+                    <Button Grid.Column="1" Content="Trouver" Margin="5,0,0,0" Padding="10,0" Command="{Binding SearchCommand}"/>
+
+                    <!-- Bouton Effacer -->
+                    <Button Grid.Column="2" Content="Effacer" Margin="5,0,0,0" Padding="10,0" Command="{Binding ClearSearchCommand}"/>
+                </Grid>
+
+                <!-- GridControl existant -->
+                <dxg:GridControl Grid.Row="1" ItemsSource="{Binding FilteredInfoContacts}" Margin="10,0,10,5" VerticalAlignment="Stretch">
+                    <dxg:GridControl.Columns>
+                        <dxg:GridColumn FieldName="Contact.Societe.Nom" Header="Société" GroupIndex="0" />
+                        <dxg:GridColumn FieldName="Contact.Nom" Header="Contact" GroupIndex="1" />
+                        <dxg:GridColumn FieldName="TypeInfo" Header="Type" />
+                        <dxg:GridColumn FieldName="Info" Header="Info" />
+                    </dxg:GridControl.Columns>
+                    <dxg:GridControl.View>
+                        <dxg:TableView AutoWidth="True" ShowGroupPanel="False" ShowCriteriaInAutoFilterRow="False" />
+                    </dxg:GridControl.View>
+                </dxg:GridControl>
+
+                <!-- Bouton Nouveau contact en bas à droite -->
+                <Grid Grid.Row="2" HorizontalAlignment="Right" Margin="10">
+                    <Button Content="Nouveau contact" Command="{Binding AddNewContactCommand}">
+                        <Button.ContentTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="+" FontWeight="Bold" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </Button.ContentTemplate>
+                    </Button>
+                </Grid>
+
+                <!-- Overlay : affiché uniquement si IsSelectSocieteVisible est true -->
+                <Border Background="#80000000"
+                Visibility="{Binding IsSelectSocieteVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Panel.ZIndex="100"
+                Grid.RowSpan="3">
+                    <Grid>
+                        <Border Background="White"
+                        Padding="20"
+                        CornerRadius="5"
+                        BorderBrush="Gray"
+                        BorderThickness="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="Choisir une société"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   Margin="0,0,0,10" />
+                                <!-- Utilisation de ComboBoxEdit pour la sélection de société -->
+                                <dxe:ComboBoxEdit
+                            ItemsSource="{Binding Societes}"
+                            EditValue="{Binding SelectedSociete}"
+                            DisplayMember="Nom"
+                            IsTextEditable="True"
+                            Width="200">
+                                    <dxe:ComboBoxEdit.StyleSettings>
+                                        <dxe:ComboBoxStyleSettings />
+                                    </dxe:ComboBoxEdit.StyleSettings>
+                                    <dxe:ComboBoxEdit.Buttons>
+                                        <dxe:ButtonInfo x:Name="my_Button" Content="+" GlyphKind="Plus" IsDefaultButton="False" Command="{Binding AddNewSocieteCommand}" />
+                                    </dxe:ComboBoxEdit.Buttons>
+                                </dxe:ComboBoxEdit>
+                                <Grid Margin="0,10,0,0" HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Content="Valider" Command="{Binding ConfirmSocieteSelectionCommand}" Margin="0,0,5,0" HorizontalAlignment="Stretch"/>
+                                    <Button Grid.Column="1" Content="Annuler" Command="{Binding CancelSocieteSelectionCommand}" HorizontalAlignment="Stretch"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+
+
+
+    </DockPanel>
+
+
+</UserControl>
