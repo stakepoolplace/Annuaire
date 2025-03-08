@@ -39,6 +39,7 @@ namespace Annuaire
             mainWindow.DataContext = mainViewModel;
             MainWindow = new Window { Content = mainWindow };
             BindingOperations.SetBinding(MainWindow, Window.TitleProperty, new Binding("WindowTitle") { Source = mainViewModel });
+            MainWindow.WindowState = WindowState.Maximized; 
             MainWindow.Show();
         }
     }

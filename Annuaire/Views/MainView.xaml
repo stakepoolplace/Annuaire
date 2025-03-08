@@ -78,7 +78,7 @@
                     <dxg:GridColumn FieldName="Info" Header="Info" />
                 </dxg:GridControl.Columns>
                 <dxg:GridControl.View>
-                    <dxg:TableView AutoWidth="True" ShowGroupPanel="False" ShowCriteriaInAutoFilterRow="False" />
+                    <dxg:TableView AutoWidth="True" ShowGroupPanel="True" ShowCriteriaInAutoFilterRow="False" />
                 </dxg:GridControl.View>
             </dxg:GridControl>
 
