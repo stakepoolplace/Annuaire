@@ -33,6 +33,12 @@ namespace Annuaire.Services
         public async Task<List<Societe>> GetSocietesAsync()
             => await _context.Societes.Include(s => s.Contacts).ToListAsync();
 
+        public async Task<Societe> GetSocieteByIdAsync(int id)
+        {
+            return await _context.Societes
+                .AsNoTracking() // Optionnel, pour de meilleures performances en lecture seule
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
         public async Task<Societe> AddSocieteAsync(Societe societe)
         {
             _context.Societes.Add(societe);
@@ -67,5 +73,7 @@ namespace Annuaire.Services
             // Placez un point de débogage ici pour vérifier le contenu de 'contacts'
             return contacts;
         }
+
+
     }
 }

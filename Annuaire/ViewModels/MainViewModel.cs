@@ -7,6 +7,8 @@ using System.Linq;
 using DevExpress.Data.Browsing;
 using System.Windows.Input;
 using System.Windows;
+using Annuaire.Views;
+using DevExpress.Data.Svg;
 
 namespace Annuaire.ViewModels
 {
@@ -138,21 +140,68 @@ namespace Annuaire.ViewModels
         [GenerateCommand]
         void AddNewSociete()
         {
-            // Logique pour ajouter une nouvelle société
-            Status = "Ouvrir la nouvelle vue avec le nom de la societe présaisi.";
+            // Récupérer le texte saisi dans le ComboBoxEdit
+            string nomSociete = SearchText; // ou la propriété liée au ComboBoxEdit
+
+            var addContactViewModel = new AddContactViewModel();
+            // Initialiser avec le nom de la société
+            addContactViewModel.Nom = nomSociete;
+
+            Status = "Création de contact pour " + nomSociete;
+
+            var addContactWindow = new AddContact
+            {
+                DataContext = addContactViewModel
+            };
+
+            IsSelectSocieteVisible = false; // Fermer l'overlay
+            addContactWindow.ShowDialog();
+
+        }
+
+        [GenerateCommand]
+        void ClearSociete()
+        {
+            SelectedSociete = null;
+            SearchText = string.Empty;
+            Status = "Champ initialisé.";
+
         }
 
 
         [GenerateCommand]
-        void ConfirmSocieteSelection()
+        async void ConfirmSocieteSelection()
         {
-            // Exemple : créer le contact avec la société sélectionnée
-            // var newContact = new Contact { Societe = SelectedSociete, ... };
-            // Contacts.Add(newContact);
+            if (SelectedSociete == null) return;
 
-            IsSelectSocieteVisible = false;
-            Status = "Nouveau contact créé.";
+            // Charger les données complètes de la société
+            var societe = await _service.GetSocieteByIdAsync(SelectedSociete.Id);
+
+            if (societe != null) // Ajout d'une vérification
+            {
+                // Ajouter un log pour déboguer
+                System.Diagnostics.Debug.WriteLine($"Société chargée : {societe.Nom}, {societe.Adresse}, {societe.Ville}");
+
+                var addContactWindow = new AddContact(
+                    societe.Id,
+                    societe.Nom,
+                    societe.Adresse,
+                    societe.Adresse2,
+                    societe.CodePostal,
+                    societe.Ville,
+                    societe.TelStandard
+                );
+
+                Status = "Création de contact pour societe id: " + societe.Id;
+                IsSelectSocieteVisible = false;
+                addContactWindow.ShowDialog();
+            }
+            else
+            {
+                Status = "Erreur : Impossible de charger les données de la société";
+            }
         }
+
 
         [GenerateCommand]
         void CancelSocieteSelection()

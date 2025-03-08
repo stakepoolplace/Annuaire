@@ -25,8 +25,6 @@ namespace Annuaire.Views {
         {
             if (e.Key == Key.Enter)
             {
-                // Handle the Enter key press event
-                // For example, you can trigger the search command here
                 var viewModel = DataContext as ViewModels.MainViewModel;
                 if (viewModel != null && viewModel.SearchCommand.CanExecute(null))
                 {
