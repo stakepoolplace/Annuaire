@@ -7,7 +7,8 @@
     xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
     xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
     xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
-    xmlns:ViewModels="clr-namespace:Annuaire.ViewModels"
+    xmlns:ViewModels="clr-namespace:Annuaire.ViewModels" 
+    xmlns:converters="clr-namespace:Annuaire.Converters"
     x:Class="Annuaire.Views.MainView"
     mc:Ignorable="d"
     d:DesignHeight="300"
@@ -15,6 +16,7 @@
     >
 
     <UserControl.Resources>
+        <converters:UppercaseConverter x:Key="UppercaseConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
 
@@ -72,8 +74,21 @@
             <!-- GridControl existant -->
             <dxg:GridControl Grid.Row="1" ItemsSource="{Binding FilteredInfoContacts}" Margin="10,0,10,5" VerticalAlignment="Stretch">
                 <dxg:GridControl.Columns>
-                    <dxg:GridColumn FieldName="Contact.Societe.Nom" Header="Société" GroupIndex="0" />
-                    <dxg:GridColumn FieldName="Contact.Nom" Header="Contact" GroupIndex="1" />
+                    <!-- Utilisation de la propriété calculée pour le regroupement -->
+                    <dxg:GridColumn FieldName="SocieteGroupLabel" Header="Société" GroupIndex="0">
+                        <dxg:GridColumn.GroupValueTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Value, Converter={StaticResource UppercaseConverter}}" />
+                            </DataTemplate>
+                        </dxg:GridColumn.GroupValueTemplate>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="ContactGroupLabel" Header="Contact" GroupIndex="1">
+                        <dxg:GridColumn.GroupValueTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Value, Converter={StaticResource UppercaseConverter}}" />
+                            </DataTemplate>
+                        </dxg:GridColumn.GroupValueTemplate>
+                    </dxg:GridColumn>
                     <dxg:GridColumn FieldName="TypeInfo" Header="Type" />
                     <dxg:GridColumn FieldName="Info" Header="Info" />
                 </dxg:GridControl.Columns>
