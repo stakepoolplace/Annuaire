@@ -19,6 +19,20 @@ namespace Annuaire.ViewModels
         private readonly IAnnuaireService _service;
         private readonly MainViewModel _mainViewModel;
         private List<int> _deletedContactInfoIds;
+        public List<TypeInfoItem> typeInfoList = new List<TypeInfoItem>
+            {
+                new TypeInfoItem { Text = "Email", Value = "Email" },
+                new TypeInfoItem { Text = "Téléphone", Value = "Téléphone" },
+                new TypeInfoItem { Text = "Adresse", Value = "Adresse" },
+                new TypeInfoItem { Text = "Code postal", Value = "Code postal" },
+                new TypeInfoItem { Text = "Ville", Value = "Ville" },
+            };
+
+        public List<CiviliteItem> civiliteList = new List<CiviliteItem>
+            {
+                new CiviliteItem { Text = "M.", Value = "M." },
+                new CiviliteItem { Text = "Mme", Value = "Mme" }
+            };
         public ObservableCollection<TypeInfoItem> TypeInfoItems { get; set; }
         public ObservableCollection<CiviliteItem> CiviliteItems { get; set; }
 
@@ -26,20 +40,12 @@ namespace Annuaire.ViewModels
         {
             _service = service;
             _mainViewModel = mainViewModel;
+
             // Initialize collections
             Contacts = new ObservableCollection<Contact>();
             ContactInfos = new ObservableCollection<InfoContact>();
-            // Initialiser la liste des types d'info
-            TypeInfoItems = new ObservableCollection<TypeInfoItem>
-            {
-                new TypeInfoItem { Text = "Email", Value = "Email" },
-                new TypeInfoItem { Text = "Téléphone", Value = "Téléphone" }
-            };
-            CiviliteItems = new ObservableCollection<CiviliteItem>
-            {
-                new CiviliteItem { Text = "M.", Value = "M." },
-                new CiviliteItem { Text = "Mme", Value = "Mme" }
-            };
+            TypeInfoItems = new ObservableCollection<TypeInfoItem>(typeInfoList);
+            CiviliteItems = new ObservableCollection<CiviliteItem>(civiliteList);
         }
 
         #region Properties
@@ -109,10 +115,25 @@ namespace Annuaire.ViewModels
             }
         }
 
+        private bool CheckFields()
+        {
+            if (Contacts == null || Contacts.Count == 0)
+            {
+                MessageBox.Show("Il faut au moins un contact pour enregistrer.",
+                                "Erreur",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                return false;
+            }
+            return true;
+        }
 
         [GenerateCommand]
         public virtual async void Save()
         {
+
+            if (!CheckFields()) return;
+
             try
             {
                 // 1. Sauvegarder ou mettre à jour la société
@@ -165,7 +186,6 @@ namespace Annuaire.ViewModels
                     {
                         // Nouvelle info contact
                         info.ContactId = SelectedContact.Id;
-                        info.Contact = SelectedContact;
                         await _service.AddInfoContactAsync(info);
                     }
                     else
@@ -206,7 +226,6 @@ namespace Annuaire.ViewModels
         [GenerateCommand]
         public virtual void Cancel()
         {
-            System.Diagnostics.Debug.WriteLine("Cancel");
             // Fermer la fenêtre sans sauvegarder
             RequestClose?.Invoke();
         }

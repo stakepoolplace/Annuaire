@@ -45,7 +45,6 @@ namespace Annuaire.Views
             if (selectedSociete != null)
             {
                 _viewModel.SelectedSociete = selectedSociete;
-                //LoadContactsAsync(selectedSociete.Id);
 
             }
         }

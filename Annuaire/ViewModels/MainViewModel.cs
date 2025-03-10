@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows;
 using Annuaire.Views;
 using DevExpress.Data.Svg;
+using System;
 
 namespace Annuaire.ViewModels
 {
@@ -70,8 +71,12 @@ namespace Annuaire.ViewModels
 
             if (MainGrid != null)
             {
-                var infoContacts = await _service.GetInfoContactsNoTrackingAsync();
-                InfoContacts = new ObservableCollection<InfoContact>(infoContacts);
+                var infoContacts = await _service.GetInfoContactsAsync();
+                InfoContacts.Clear();
+                foreach(var info in infoContacts)
+                {
+                    InfoContacts.Add(info);
+                }
                 Search();
 
             } 
@@ -143,7 +148,19 @@ namespace Annuaire.ViewModels
         [GenerateCommand]
         void ShowSelectSocietePopup()
         {
+            RefreshSocieteList();
             IsSelectSocieteVisible = true;
+        }
+
+        private async void RefreshSocieteList()
+        {
+            var societes = await _service.GetSocietesAsync();
+
+            Societes.Clear();
+            foreach (var societe in societes)
+            {
+                Societes.Add(societe); 
+            }
         }
 
 

@@ -4,23 +4,23 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Annuaire.Services
 {
     public class AnnuaireService : IAnnuaireService
     {
-        private readonly AnnuaireDbContext _context;
-
+        // Le DbContext n'est pas conservé comme champ privé :
+        // on le crée et le détruit au sein de chaque méthode.
         public AnnuaireService()
         {
-            _context = new AnnuaireDbContext();
             try
             {
-                // Test de connexion
-                _context.Database.CanConnect();
-                System.Diagnostics.Debug.WriteLine("Connexion à la base de données réussie");
+                using (var testContext = new AnnuaireDbContext())
+                {
+                    testContext.Database.CanConnect();
+                    System.Diagnostics.Debug.WriteLine("Connexion à la base de données réussie");
+                }
             }
             catch (Exception ex)
             {
@@ -29,54 +29,77 @@ namespace Annuaire.Services
         }
 
         public async Task<List<InfoContact>> GetInfoContactsAsync()
-            => await _context.InfoContacts.Include(s => s.Contact).ThenInclude(c => c.Societe).ToListAsync();
+        {
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.InfoContacts
+                                    .Include(s => s.Contact)
+                                    .ThenInclude(c => c.Societe)
+                                    .ToListAsync();
+            }
+        }
 
         public async Task<List<InfoContact>> GetInfoContactsNoTrackingAsync()
-            => await _context.InfoContacts.AsNoTracking().Include(s => s.Contact).ThenInclude(c => c.Societe).ToListAsync();
-
+        {
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.InfoContacts
+                                    .AsNoTracking()
+                                    .Include(s => s.Contact)
+                                    .ThenInclude(c => c.Societe)
+                                    .ToListAsync();
+            }
+        }
 
         // Opérations Societe
         public async Task<List<Societe>> GetSocietesAsync()
-            => await _context.Societes.AsNoTracking().Include(s => s.Contacts).ToListAsync();
+        {
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.Societes
+                                    .AsNoTracking()
+                                    .Include(s => s.Contacts)
+                                    .ToListAsync();
+            }
+        }
 
         public async Task<Societe> GetSocieteByIdAsync(int id)
         {
-            return await _context.Societes
-                .FirstOrDefaultAsync(s => s.Id == id);
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.Societes
+                                    .FirstOrDefaultAsync(s => s.Id == id);
+            }
         }
 
         public async Task<Societe> AddSocieteAsync(Societe societe)
         {
-            _context.Societes.Add(societe);
-            await _context.SaveChangesAsync();
-            return societe;
+            using (var context = new AnnuaireDbContext())
+            {
+                context.Societes.Add(societe);
+                await context.SaveChangesAsync();
+                return societe;
+            }
         }
-
-        /*        public async Task UpdateSocieteAsync(Societe societe)
-                {
-                    _context.Societes.Update(societe);
-                    await _context.SaveChangesAsync();
-                }*/
 
         public async Task UpdateSocieteAsync(Societe societe)
         {
             try
             {
-                var local = _context.Set<Societe>()
-                    .Local
-                    .FirstOrDefault(entry => entry.Id.Equals(societe.Id));
-
-                // Si l'entité est déjà suivie localement
-                if (local != null)
+                using (var context = new AnnuaireDbContext())
                 {
-                    // Détacher l'entité existante
-                    _context.Entry(local).State = EntityState.Detached;
+                    var local = context.Set<Societe>()
+                                       .Local
+                                       .FirstOrDefault(entry => entry.Id.Equals(societe.Id));
+
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+
+                    context.Entry(societe).State = EntityState.Modified;
+                    await context.SaveChangesAsync();
                 }
-
-                // Marquer l'entité comme modifiée sans l'attacher
-                _context.Entry(societe).State = EntityState.Modified;
-
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -85,73 +108,80 @@ namespace Annuaire.Services
             }
         }
 
-
         public async Task DeleteSocieteAsync(int id)
         {
-            var societe = await _context.Societes.FindAsync(id);
-            if (societe != null)
+            using (var context = new AnnuaireDbContext())
             {
-                _context.Societes.Remove(societe);
-                await _context.SaveChangesAsync();
+                var societe = await context.Societes.FindAsync(id);
+                if (societe != null)
+                {
+                    context.Societes.Remove(societe);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
-        // Opérations Contact avec inclusion des infos
+        // Opérations Contact
         public async Task<List<Contact>> GetContactsAsync()
         {
-            var contacts = await _context.Contacts
-                .Include(c => c.Societe)
-                .Include(c => c.Infos)
-                .ToListAsync();
-
-            // Placez un point de débogage ici pour vérifier le contenu de 'contacts'
-            return contacts;
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.Contacts
+                                    .Include(c => c.Societe)
+                                    .Include(c => c.Infos)
+                                    .ToListAsync();
+            }
         }
 
         public async Task<List<Contact>> GetContactsBySocieteId(int societeId)
         {
-            return await _context.Contacts
-                .Where(c => c.SocieteId == societeId)
-                .Include(c => c.Infos)
-                .ToListAsync();
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.Contacts
+                                    .Where(c => c.SocieteId == societeId)
+                                    .Include(c => c.Infos)
+                                    .ToListAsync();
+            }
         }
 
         public async Task<List<InfoContact>> GetInfoContactsByContactId(int contactId)
         {
-            return await _context.InfoContacts
-                .Where(i => i.ContactId == contactId)
-                .ToListAsync();
+            using (var context = new AnnuaireDbContext())
+            {
+                return await context.InfoContacts
+                                    .Where(i => i.ContactId == contactId)
+                                    .ToListAsync();
+            }
         }
-
-
 
         public async Task<Contact> AddContactAsync(Contact contact)
         {
-            _context.Contacts.Add(contact);
-            await _context.SaveChangesAsync();
-            return contact;
+            using (var context = new AnnuaireDbContext())
+            {
+                context.Contacts.Add(contact);
+                await context.SaveChangesAsync();
+                return contact;
+            }
         }
-
 
         public async Task UpdateContactAsync(Contact contact)
         {
-
             try
             {
-                var local = _context.Set<Contact>()
-                .Local
-                    .FirstOrDefault(entry => entry.Id.Equals(contact.Id));
-
-                // Si l'entité est déjà suivie localement
-                if (local != null)
+                using (var context = new AnnuaireDbContext())
                 {
-                    // Détacher l'entité existante
-                    _context.Entry(local).State = EntityState.Detached;
-                }
+                    var local = context.Set<Contact>()
+                                       .Local
+                                       .FirstOrDefault(entry => entry.Id.Equals(contact.Id));
 
-                // Marquer l'entité comme modifiée sans l'attacher
-                _context.Entry(contact).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+
+                    context.Entry(contact).State = EntityState.Modified;
+                    await context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -160,65 +190,67 @@ namespace Annuaire.Services
             }
         }
 
-
+        // Opérations InfoContact
         public async Task<InfoContact> AddInfoContactAsync(InfoContact infoContact)
         {
-            _context.InfoContacts.Add(infoContact);
-            await _context.SaveChangesAsync();
-            return infoContact;
+            using (var context = new AnnuaireDbContext())
+            {
+                context.InfoContacts.Add(infoContact);
+                await context.SaveChangesAsync();
+                return infoContact;
+            }
         }
-
 
         public async Task UpdateInfoContactAsync(InfoContact infoContact)
         {
             try
             {
-                var local = _context.Set<InfoContact>()
-                .Local
-                    .FirstOrDefault(entry => entry.Id.Equals(infoContact.Id));
-
-                // Si l'entité est déjà suivie localement
-                if (local != null)
+                using (var context = new AnnuaireDbContext())
                 {
-                    // Détacher l'entité existante
-                    _context.Entry(local).State = EntityState.Detached;
-                }
+                    var local = context.Set<InfoContact>()
+                                       .Local
+                                       .FirstOrDefault(entry => entry.Id.Equals(infoContact.Id));
 
-                // Marquer l'entité comme modifiée sans l'attacher
-                _context.Entry(infoContact).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+
+                    context.Entry(infoContact).State = EntityState.Modified;
+                    await context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erreur dans UpdateInfoContactAsync : {ex.Message}");
                 throw;
-
             }
         }
-
 
         public async Task DeleteInfoContactAsync(int infoId)
         {
-            var info = await _context.InfoContacts.FindAsync(infoId);
-            if (info != null)
+            using (var context = new AnnuaireDbContext())
             {
-                _context.InfoContacts.Remove(info);
-                await _context.SaveChangesAsync();
+                var info = await context.InfoContacts.FindAsync(infoId);
+                if (info != null)
+                {
+                    context.InfoContacts.Remove(info);
+                    await context.SaveChangesAsync();
+                }
             }
-
         }
 
+        // Méthode de détachement, si jamais vous en avez besoin.
         public void DetachEntity<T>(T entity) where T : class
         {
-            var entry = _context.Entry(entity);
-            if (entry != null)
+            using (var context = new AnnuaireDbContext())
             {
-                entry.State = EntityState.Detached;
+                var entry = context.Entry(entity);
+                if (entry != null)
+                {
+                    entry.State = EntityState.Detached;
+                }
             }
         }
-
-
-
-
     }
 }
