@@ -1,16 +1,35 @@
+using DevExpress.Mvvm.CodeGenerators;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Annuaire.Models
 {
-    public class Contact
+    [GenerateViewModel]
+    public partial class Contact
     {
-        public int Id { get; set; }
-        public int SocieteId { get; set; }
-        public string Civilite { get; set; }
-        public string Nom { get; set; }
-        public string Prenom { get; set; }
-        public string Fonction { get; set; }
-        public virtual Societe Societe { get; set; }
-        public virtual ICollection<InfoContact> Infos { get; set; }
+        [GenerateProperty]
+        private int _id;
+
+        [GenerateProperty]
+        private int _societeId;
+
+        [GenerateProperty]
+        private string _civilite;
+
+        [GenerateProperty]
+        private string _nom;
+
+        [GenerateProperty]
+        private string _prenom;
+
+        [GenerateProperty]
+        private string _fonction;
+
+        [GenerateProperty]
+        private Societe _societe;
+
+        [GenerateProperty]
+        private ICollection<InfoContact> _infos;
+
     }
 }

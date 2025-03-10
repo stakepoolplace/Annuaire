@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Annuaire.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Annuaire.Data
 {
     public class AnnuaireDbContext : DbContext
     {
+
         public DbSet<Societe> Societes { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<InfoContact> InfoContacts { get; set; }

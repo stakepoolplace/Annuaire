@@ -8,51 +8,46 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Annuaire.ViewModels;
+using Annuaire.Services;
 
 namespace Annuaire.Views
 {
+
+
     public partial class AddContact : Window
     {
-
         private AddContactViewModel _viewModel;
+        private IAnnuaireService _service;
 
-        public AddContact()
+
+        private void InitializeViewModel(IAnnuaireService service, MainViewModel mainViewModel)
+        {
+            _service = service;
+            _viewModel = new AddContactViewModel(_service, mainViewModel);
+            _viewModel.RequestClose += ViewModel_RequestClose;
+            DataContext = _viewModel;
+
+        }
+
+
+        public AddContact(IAnnuaireService service, MainViewModel mainViewModel)
         {
             InitializeComponent();
-
-            // Create the ViewModel
-            _viewModel = new AddContactViewModel();
-
-            // Subscribe to the close request event
-            _viewModel.RequestClose += ViewModel_RequestClose;
-
-            // Set the DataContext
-            DataContext = _viewModel;
+            InitializeViewModel(service, mainViewModel);
         }
 
-        public AddContact(int societeId, string nomSociete) : this()
+        public AddContact(IAnnuaireService service, MainViewModel mainViewModel, Societe selectedSociete = null)
         {
-            // Initialize with existing société data if provided
-            _viewModel.SocieteId = societeId;
-            _viewModel.Nom = nomSociete;
+            InitializeComponent();
+            InitializeViewModel(service, mainViewModel);
 
-            // Additional initialization can be added here if needed
-            this.Title = $"Contacts pour {nomSociete}";
-        }
 
-        public AddContact(int societeId, string nomSociete, string adresse, string adresse2, string codePostal, string ville, string standard) : this()
-        {
-            // Initialize with existing société data if provided
-            _viewModel.SocieteId = societeId;
-            _viewModel.Nom = nomSociete;
-            _viewModel.Adresse = adresse;
-            _viewModel.Adresse2 = adresse2;
-            _viewModel.CodePostal = codePostal;
-            _viewModel.Ville = ville;
-            _viewModel.Standard = standard;
+            if (selectedSociete != null)
+            {
+                _viewModel.SelectedSociete = selectedSociete;
+                //LoadContactsAsync(selectedSociete.Id);
 
-            // Additional initialization can be added here if needed
-            this.Title = $"Contacts pour {nomSociete}";
+            }
         }
 
 

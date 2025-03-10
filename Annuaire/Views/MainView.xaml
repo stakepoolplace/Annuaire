@@ -72,7 +72,12 @@
             </Grid>
 
             <!-- GridControl existant -->
-            <dxg:GridControl Grid.Row="1" ItemsSource="{Binding FilteredInfoContacts}" Margin="10,0,10,5" VerticalAlignment="Stretch">
+            <dxg:GridControl x:Name="mainGrid" 
+                             Loaded="MainGrid_Loaded" 
+                             Grid.Row="1" 
+                             ItemsSource="{Binding FilteredInfoContacts}" 
+                             Margin="10,0,10,5" VerticalAlignment="Stretch">
+
                 <dxg:GridControl.Columns>
                     <!-- Utilisation de la propriété calculée pour le regroupement -->
                     <dxg:GridColumn FieldName="SocieteGroupLabel" Header="Société" GroupIndex="0">
@@ -135,7 +140,7 @@
                             <dxe:ComboBoxEdit
                                     ItemsSource="{Binding Societes}"
                                     EditValue="{Binding SelectedSociete, UpdateSourceTrigger=PropertyChanged}"
-                                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{Binding SocieteSearchText, UpdateSourceTrigger=PropertyChanged}"
                                     DisplayMember="Nom"
                                     IsTextEditable="True"
                                     AllowNullInput="True"

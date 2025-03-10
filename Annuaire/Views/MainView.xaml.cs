@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Annuaire.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,5 +33,14 @@ namespace Annuaire.Views {
                 }
             }
         }
+
+        private void MainGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel viewModel && sender is DevExpress.Xpf.Grid.GridControl grid)
+            {
+                viewModel.MainGrid = grid;
+            }
+        }
+
     }
 }

@@ -29,6 +29,8 @@ namespace Annuaire.ViewModels
             SearchHistory = new ObservableCollection<string>();
         }
 
+        public DevExpress.Xpf.Grid.GridControl MainGrid { get; set; }
+
         [GenerateProperty]
         string _Status;
 
@@ -40,9 +42,6 @@ namespace Annuaire.ViewModels
 
         [GenerateProperty]
         ObservableCollection<Societe> _Societes = new();
-
-        [GenerateProperty]
-        ObservableCollection<Contact> _Contacts = new();
 
         [GenerateProperty]
         ObservableCollection<InfoContact> _InfoContacts = new();
@@ -62,28 +61,48 @@ namespace Annuaire.ViewModels
         [GenerateProperty]
         Societe _SelectedSociete; // Société sélectionnée dans la ComboBox
 
+        // Pour la sélection de société
+        [GenerateProperty]
+        string _SocieteSearchText;
+
+        public async Task RefreshGrid()
+        {
+
+            if (MainGrid != null)
+            {
+                var infoContacts = await _service.GetInfoContactsNoTrackingAsync();
+                InfoContacts = new ObservableCollection<InfoContact>(infoContacts);
+                Search();
+
+            } 
+
+
+        }
+
+
+
         [GenerateCommand]
         void Login() => Status = "User: " + UserName;
         bool CanLogin() => !string.IsNullOrEmpty(UserName);
 
         [GenerateCommand]
-        async Task LoadData()
+        public async Task LoadData()
         {
             var societes = await _service.GetSocietesAsync();
             Societes = new ObservableCollection<Societe>(societes);
-
-            var contacts = await _service.GetContactsAsync();
-            Contacts = new ObservableCollection<Contact>(contacts);
 
             var infoContacts = await _service.GetInfoContactsAsync();
             InfoContacts = new ObservableCollection<InfoContact>(infoContacts);
             FilteredInfoContacts = new ObservableCollection<InfoContact>(infoContacts);
 
+            // Forcer le rafrachissement des groupes (mis en cache)
+            MainGrid?.RefreshData();
+
             Status = "Données chargées";
         }
 
         [GenerateCommand]
-        void Search()
+        public void Search()
         {
             if (string.IsNullOrWhiteSpace(SearchText))
             {
@@ -140,33 +159,25 @@ namespace Annuaire.ViewModels
         [GenerateCommand]
         void AddNewSociete()
         {
-            // Récupérer le texte saisi dans le ComboBoxEdit
-            string nomSociete = SearchText; // ou la propriété liée au ComboBoxEdit
+            string nomSociete = SocieteSearchText;
 
-            var addContactViewModel = new AddContactViewModel();
-            // Initialiser avec le nom de la société
-            addContactViewModel.Nom = nomSociete;
+            var addContactWindow = new AddContact(_service, this); // Passer le service au constructeur de AddContact
+            var viewModel = (AddContactViewModel)addContactWindow.DataContext; // Récupérer le ViewModel créé
+            viewModel.Nom = nomSociete;
 
             Status = "Création de contact pour " + nomSociete;
-
-            var addContactWindow = new AddContact
-            {
-                DataContext = addContactViewModel
-            };
-
-            IsSelectSocieteVisible = false; // Fermer l'overlay
+            IsSelectSocieteVisible = false;
             addContactWindow.ShowDialog();
-
         }
 
         [GenerateCommand]
         void ClearSociete()
         {
             SelectedSociete = null;
-            SearchText = string.Empty;
+            SocieteSearchText = string.Empty;
             Status = "Champ initialisé.";
-
         }
+
 
 
         [GenerateCommand]
@@ -182,15 +193,7 @@ namespace Annuaire.ViewModels
                 // Ajouter un log pour déboguer
                 System.Diagnostics.Debug.WriteLine($"Société chargée : {societe.Nom}, {societe.Adresse}, {societe.Ville}");
 
-                var addContactWindow = new AddContact(
-                    societe.Id,
-                    societe.Nom,
-                    societe.Adresse,
-                    societe.Adresse2,
-                    societe.CodePostal,
-                    societe.Ville,
-                    societe.TelStandard
-                );
+                var addContactWindow = new AddContact(_service, this, societe);
 
                 Status = "Création de contact pour societe id: " + societe.Id;
                 IsSelectSocieteVisible = false;
