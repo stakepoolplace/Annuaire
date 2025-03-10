@@ -1,8 +1,13 @@
 # Annuaire
 
 ## Reste à faire
-On aurait pu faire beaucoup plus d’encapsulation, utiliser des enums par exemple ou utiliser des tables SQL de références et clarifier l’utilisation du passage en paramètre de MainViewModel.
+
+On aurait pu faire ajouter des contrôles sur l'UI, faire plus d’encapsulation du code, utiliser des enums par exemple ou utiliser des tables SQL de références et clarifier l’utilisation du passage en paramètre de MainViewModel.
+
+
 A la place de l’implémentation de la méthode AddContact.Save() qui enregistre les collections séparément, on aurait pu lier le graphe d’objets à l’UI et laisser le binding propager les modifications de l’utilisateur sur le graphe d’objets.
+
+
 De cette manière, appeler SaveChanges() sur le contexte pour que l’ensemble des modifications  soient enregistrés dans la base est suffisant.
  
 ## Détail
