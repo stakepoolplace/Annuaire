@@ -117,9 +117,9 @@ namespace Annuaire.ViewModels
 
         private bool CheckFields()
         {
-            if (Contacts == null || Contacts.Count == 0)
+            if (Contacts == null || Contacts.Count == 0 || ContactInfos == null || ContactInfos.Count == 0)
             {
-                MessageBox.Show("Il faut au moins un contact pour enregistrer.",
+                MessageBox.Show("Au moins un contact et une info sont nécessaires pour enregistrer.",
                                 "Erreur",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);

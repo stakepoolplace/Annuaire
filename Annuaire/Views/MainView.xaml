@@ -95,10 +95,33 @@
                         </dxg:GridColumn.GroupValueTemplate>
                     </dxg:GridColumn>
                     <dxg:GridColumn FieldName="TypeInfo" Header="Type" />
-                    <dxg:GridColumn FieldName="Info" Header="Info" />
+                    <dxg:GridColumn FieldName="Info" Header="Info">
+                        <dxg:GridColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Padding="5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <!-- Afficher la valeur de la cellule via la propriété Value -->
+                                        <TextBlock Text="{Binding Value}" VerticalAlignment="Center"/>
+                                        <!-- Icône mail sur la droite -->
+                                        <TextBlock Grid.Column="1"
+                               FontFamily="Segoe MDL2 Assets"
+                               Text="&#xE715;"
+                               Margin="5,0,0,0"
+                               VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </dxg:GridColumn.CellTemplate>
+                    </dxg:GridColumn>
+
+
                 </dxg:GridControl.Columns>
                 <dxg:GridControl.View>
-                    <dxg:TableView AutoWidth="True" ShowGroupPanel="True" ShowCriteriaInAutoFilterRow="False" />
+                    <dxg:TableView AutoWidth="True" AllowEditing="False" ShowGroupPanel="True" ShowCriteriaInAutoFilterRow="False" />
                 </dxg:GridControl.View>
             </dxg:GridControl>
 
