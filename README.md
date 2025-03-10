@@ -11,10 +11,14 @@
 
 
 ## Installation
-- Création du schéma DB dans la console NuGet :
+- Création du schéma DB vide dans la console NuGet :
 ```
 Drop-Database
 Update-Database
+```
+- Remplir les tables :
+```
+executer le script : ./Annuaire.sql
 ```
   
 ## Améliorations possibles
