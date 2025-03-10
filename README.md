@@ -1,6 +1,6 @@
 # Annuaire
 
-## Reste à faire
+## Améliorations possibles
 
 On aurait pu faire ajouter des contrôles sur l'UI, faire plus d’encapsulation du code, utiliser des enums par exemple ou utiliser des tables SQL de références et clarifier l’utilisation du passage en paramètre de MainViewModel.
 
